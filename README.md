@@ -9,4 +9,5 @@ A Rust based deduplication tool
 ### Building and Running
 
 * Build:  cd into rdedupe and run `make all`
-* Run:  `cargo run -- --path /tmp`
+* Run:  `cargo run -- dedupe --path tests --pattern .txt`
+* Run tests:  `make test`

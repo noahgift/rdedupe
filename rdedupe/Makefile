@@ -13,6 +13,6 @@ build-osx:
 	#cargo build --release --target x86_64-apple-darwin
 
 run:
-	cargo run -- search --path /tmp
+	cargo run -- dedupe --path tests --pattern .txt
 
 all: format lint test run
