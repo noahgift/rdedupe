@@ -1,3 +1,5 @@
+[![Rust CI/CD Pipeline](https://github.com/noahgift/rdedupe/actions/workflows/rust-hello.yml/badge.svg)](https://github.com/noahgift/rdedupe/actions/workflows/rust-hello.yml)
+
 ## RDedupe
 
 A Rust based deduplication tool
