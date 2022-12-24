@@ -8,6 +8,11 @@ A Rust based deduplication tool
 
 * Build a multiplatform, fast deduplication tool
 
+#### Future Improvements
+
+* Looking into parallelizing walking and hashing i.e. with [jwalk](https://crates.io/crates/jwalk)
+
+
 ### Building and Running
 
 * Build:  cd into rdedupe and run `make all`
