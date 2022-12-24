@@ -15,6 +15,17 @@ pub fn walk(path: &str) -> Result<Vec<String>, Box<dyn Error>> {
     Ok(files)
 }
 
+//Find files matching a pattern
+pub fn find(files: Vec<String>, pattern: &str) -> Vec<String> {
+    let mut matches = Vec::new();
+    for file in files {
+        if file.contains(pattern) {
+            matches.push(file);
+        }
+    }
+    matches
+}
+
 // Create a checksum of each file and store in a HashMap if the checksum already exists, add the file to the vector of files with that checksum
 pub fn checksum(files: Vec<String>) -> Result<HashMap<String, Vec<String>>, Box<dyn Error>> {
     let mut checksums = HashMap::new();
