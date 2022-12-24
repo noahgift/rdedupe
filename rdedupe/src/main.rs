@@ -19,20 +19,20 @@ enum Commands {
     Search {
         #[clap(long, default_value = ".")]
         path: String,
-        #[clap(long, default_value = "*")]
+        #[clap(long, default_value = "")]
         pattern: String,
     },
     Dedupe {
         #[clap(long, default_value = ".")]
         path: String,
-        #[clap(long, default_value = "*")]
+        #[clap(long, default_value = "")]
         pattern: String,
     },
     //create count with path and pattern defaults for both
     Count {
         #[clap(long, default_value = ".")]
         path: String,
-        #[clap(long, default_value = "*")]
+        #[clap(long, default_value = "")]
         pattern: String,
     },
 }
