@@ -7,9 +7,6 @@ lint:
 test:
 	cargo test --quiet
 
-build-osx:
-	cargo build --release --target x86_64-apple-darwin
-
 build-release:
 	cargo build --release 
 
