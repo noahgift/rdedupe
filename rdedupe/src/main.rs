@@ -14,11 +14,11 @@ struct Cli {
 fn main() {
     let cli = Cli::parse();
     println!("Searching path: {:?}", cli.path);
-    let files = dedupe::walk(&cli.path).unwrap();
+    let files = rdedupe::walk(&cli.path).unwrap();
     println!("Found {} files", files.len());
     //Now find duplicates
-    let checksums = dedupe::checksum(files).unwrap();
-    let duplicates = dedupe::find_duplicates(checksums);
+    let checksums = rdedupe::checksum(files).unwrap();
+    let duplicates = rdedupe::find_duplicates(checksums);
     println!("Found {} duplicates", duplicates.len());
     for duplicate in duplicates {
         println!("Duplicate files: {:?}", duplicate);
