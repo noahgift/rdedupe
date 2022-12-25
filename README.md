@@ -13,6 +13,7 @@ A Rust based deduplication tool
 
 #### Future Improvements
 
+* Fix GitHub Actions Build process to not fail silently!
 * Use Polars DataFrame and include statistics about files and generate a CSV report.
 * Store logs about actions performed across multiple runs
 
