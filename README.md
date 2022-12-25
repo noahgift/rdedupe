@@ -14,6 +14,7 @@ A Rust based deduplication tool
 #### Future Improvements
 
 * Use Polars DataFrame and include statistics about files and generate a CSV report.
+* Store logs about actions performed across multiple runs
 
 ### Building and Running
 
