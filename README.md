@@ -6,12 +6,14 @@ A Rust based deduplication tool
 
 ### Goals
 
-* Build a multiplatform, fast deduplication tool
+* Build a multiplatform, fast deduplication tool that uses Rust parallelization.
+
+![Rayon Parallization](https://user-images.githubusercontent.com/58792/209480753-d2452e39-f72b-43c2-8000-b2d9f18d8a33.png)
+
 
 #### Future Improvements
 
-* Looking into parallelizing walking and hashing i.e. with [jwalk](https://crates.io/crates/jwalk)
-
+* Use Polars DataFrame and include statistics about files and generate a CSV report.
 
 ### Building and Running
 
