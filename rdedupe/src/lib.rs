@@ -1,5 +1,6 @@
 //walks a filesystem and finds duplicate files
 
+use rayon::prelude::*;
 use std::collections::HashMap;
 use std::error::Error;
 use walkdir::WalkDir;
@@ -26,18 +27,21 @@ pub fn find(files: Vec<String>, pattern: &str) -> Vec<String> {
     matches
 }
 
-// Create a checksum of each file and store in a HashMap if the checksum already exists, add the file to the vector of files with that checksum
+// Parallel version of checksum using rayon with a mutex to ensure
+//that the HashMap is not accessed by multiple threads at the same time
 pub fn checksum(files: Vec<String>) -> Result<HashMap<String, Vec<String>>, Box<dyn Error>> {
-    let mut checksums = HashMap::new();
-    for file in files {
-        let checksum = md5::compute(std::fs::read(&file)?);
+    let checksums = std::sync::Mutex::new(HashMap::new());
+    files.par_iter().for_each(|file| {
+        let checksum = md5::compute(std::fs::read(file).unwrap());
         let checksum = format!("{:x}", checksum);
         checksums
+            .lock()
+            .unwrap()
             .entry(checksum)
             .or_insert_with(Vec::new)
-            .push(file);
-    }
-    Ok(checksums)
+            .push(file.to_string());
+    });
+    Ok(checksums.into_inner().unwrap())
 }
 
 // Find all the files with more than one entry in the HashMap
