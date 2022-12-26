@@ -7,15 +7,14 @@ format-check:
 
 lint:
 	@rustup component add clippy 2> /dev/null
-	@cargo-clippy --all-targets --all-features -- -D warnings
+	@cargo-clippy 
 
 test:
-	@rustup component add rustfmt 2> /dev/null
 	cargo test 
 
 build-release:
 	@rustup update
-	cargo build --release 
+	#cargo build --release 
 
 run:
 	cargo run -- dedupe --path tests --pattern .txt
