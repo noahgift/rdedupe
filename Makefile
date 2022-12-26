@@ -7,7 +7,6 @@ format-check:
 
 lint:
 	@rustup component add clippy 2> /dev/null
-	@cargo run
 	@cargo-clippy 
 
 test:
