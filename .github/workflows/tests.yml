@@ -3,8 +3,7 @@ name: Tests
 on: [push, pull_request]
 
 jobs:
-  test-latest:
-    name: Test on Latest
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -13,22 +12,8 @@ jobs:
         with:
           toolchain: stable
           profile: minimal
+          components: clippy, rustfmt
           override: true
-      - name: Check
-        run: make check
-      - name: Test
+      - name: Run clippy
         run: make test
-
-  test-stable:
-    name: Test on 1.61.0
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v1
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
-          override: true
-      - name: Test
-        run: make test
+  
