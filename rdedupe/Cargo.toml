@@ -8,6 +8,7 @@ clap = {version="4.0.32", features=["derive"]}
 walkdir = "2.3.2"
 md5 = "0.7.0"
 rayon = "1.6.1"
+indicatif = {version = "*", features = ["rayon"]}
 
 [dev-dependencies]
 assert_cmd = "2"

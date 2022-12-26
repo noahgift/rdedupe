@@ -52,22 +52,13 @@ fn main() {
             }
         }
         Some(Commands::Dedupe { path, pattern }) => {
-            //find duplicates matching a pattern
-            println!("Searching for duplicates in {}", path);
-            let files = rdedupe::walk(&path).unwrap();
-            //for files matching pattern, find duplicates
-            let files = rdedupe::find(files, &pattern);
-            println!("Found {} files matching {}", files.len(), pattern);
-            //found duplicates
-            let checksums = rdedupe::checksum(files).unwrap();
-            let duplicates = rdedupe::find_duplicates(checksums);
-            println!("Found {} duplicate(s)", duplicates.len());
-            //print duplicates
-            for duplicate in duplicates {
-                println!("Duplicate files:");
-                for file in duplicate {
-                    println!("{}", file);
-                }
+            //dedupe files matching a pattern
+            //display the progress bar using indicatif
+            println!("Deduping files in {} matching {}", path, pattern);
+            let result = rdedupe::run(&path, &pattern);
+            match result {
+                Ok(_) => println!("Deduping complete"),
+                Err(e) => println!("Error: {}", e),
             }
         }
         Some(Commands::Count { path, pattern }) => {

@@ -8,11 +8,18 @@ A Rust based deduplication tool
 
 * Build a multiplatform, fast deduplication tool that uses Rust parallelization.
 
-![Rayon Parallization](https://user-images.githubusercontent.com/58792/209480753-d2452e39-f72b-43c2-8000-b2d9f18d8a33.png)
+#### Current Status
+
+* Added ![Rayon Parallization](https://user-images.githubusercontent.com/58792/209480753-d2452e39-f72b-43c2-8000-b2d9f18d8a33.png)
+* Added [progress bar](https://github.com/console-rs/indicatif) 
+
+
 
 
 #### Future Improvements
 
+* Add a GUI
+* Add a web interface
 * Fix GitHub Actions Build process to not fail silently!
 * Use Polars DataFrame and include statistics about files and generate a CSV report.
 * Store logs about actions performed across multiple runs
