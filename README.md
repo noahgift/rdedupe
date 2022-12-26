@@ -11,7 +11,8 @@ A Rust based deduplication tool
 #### Current Status
 
 * Added ![Rayon Parallization](https://user-images.githubusercontent.com/58792/209480753-d2452e39-f72b-43c2-8000-b2d9f18d8a33.png)
-* Added [progress bar](https://github.com/console-rs/indicatif) 
+* Added [progress bar](https://github.com/console-rs/indicatif)
+![Progress Bar](https://user-images.githubusercontent.com/58792/209585522-0f12445d-59ca-4e52-8cfd-764a00be6f90.png)
 
 
 
