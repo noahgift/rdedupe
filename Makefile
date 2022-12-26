@@ -7,7 +7,7 @@ format-check:
 
 lint:
 	@rustup component add clippy 2> /dev/null
-	@cargo-clippy --all -- -F -D warnings
+	@cargo-clippy --all-targets --all-features -- -D warnings
 
 test:
 	@rustup component add rustfmt 2> /dev/null
