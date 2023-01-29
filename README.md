@@ -11,6 +11,10 @@ A Rust based deduplication tool
 
 * Build a multiplatform, fast deduplication tool that uses Rust parallelization.
 
+![hpc-threaded-data-engineering](https://user-images.githubusercontent.com/58792/215359439-243cf62a-e8b1-41fd-b83e-697d7e612657.png)
+
+
+
 #### Current Status
 
 * Added ![Rayon Parallization](https://user-images.githubusercontent.com/58792/209480753-d2452e39-f72b-43c2-8000-b2d9f18d8a33.png)
