@@ -10,6 +10,7 @@ md5 = "0.7.0"
 rayon = "1.6.1"
 indicatif = {version = "*", features = ["rayon"]}
 polars = {version = "0.35", features = ["lazy", "csv"]}
+num_cpus = "1.16"
 
 [dev-dependencies]
 assert_cmd = "2"

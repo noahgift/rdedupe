@@ -8,6 +8,17 @@ use std::fs;
 use std::path::Path;
 use walkdir::WalkDir;
 
+// Function to display threading information
+pub fn display_thread_info() {
+    let num_cpus = num_cpus::get();
+    let rayon_threads = rayon::current_num_threads();
+    
+    println!("");
+    println!("💻 CPU cores: {}", num_cpus);
+    println!("🧵 Rayon thread pool size: {}", rayon_threads);
+    println!("");
+}
+
 #[derive(Debug, Clone)]
 pub struct FileInfo {
     pub path: String,
@@ -99,15 +110,14 @@ pub fn find(files: Vec<String>, pattern: &str) -> Vec<String> {
     matches
 }
 
-// New function to collect detailed file information
+// New function to collect detailed file information - TRUE PARALLEL VERSION
 pub fn collect_file_info(files: Vec<String>) -> Result<Vec<FileInfo>, Box<dyn Error>> {
     if files.is_empty() {
         return Ok(Vec::new());
     }
 
-    println!("\nAnalyzing {} files...", files.len());
+    println!("\nAnalyzing {} files with {} threads...", files.len(), rayon::current_num_threads());
     
-    let file_infos = std::sync::Mutex::new(Vec::new());
     let pb = indicatif::ProgressBar::new(files.len() as u64);
     let sty = ProgressStyle::default_bar()
         .template("{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {pos}/{len} ({percent}%) {msg}")
@@ -120,17 +130,20 @@ pub fn collect_file_info(files: Vec<String>) -> Result<Vec<FileInfo>, Box<dyn Er
     // Enable steady tick to ensure spinner is visible
     pb.enable_steady_tick(std::time::Duration::from_millis(100));
 
-    files.par_iter().progress_with(pb.clone()).for_each(|file_path| {
-        if let Ok(file_info) = FileInfo::new(file_path) {
-            let mut infos = file_infos.lock().unwrap();
-            infos.push(file_info);
-        }
-    });
+    // TRUE PARALLEL: Each thread processes files independently, no shared mutex
+    let file_infos: Vec<Option<FileInfo>> = files
+        .par_iter()
+        .progress_with(pb.clone())
+        .map(|file_path| FileInfo::new(file_path).ok())
+        .collect();
 
     pb.finish_with_message("✓ File analysis complete!");
     println!();
 
-    Ok(file_infos.into_inner().unwrap())
+    // Filter out failed files
+    let valid_infos: Vec<FileInfo> = file_infos.into_iter().flatten().collect();
+    
+    Ok(valid_infos)
 }
 
 // Create Polars DataFrame from file information
@@ -227,6 +240,7 @@ pub fn run_with_dataframe(
     output_csv: Option<&str>,
 ) -> Result<DataFrame, Box<dyn Error>> {
     println!("Scanning directory: {}", path);
+
     let files = walk(path)?;
     let files = find(files, pattern);
 
@@ -279,13 +293,12 @@ pub fn run_with_dataframe(
     Ok(df)
 }
 
-/*  Parallel version of checksum using rayon with a mutex to ensure
- that the HashMap is not accessed by multiple threads at the same time
+/*  TRUE PARALLEL version of checksum using rayon with no mutex contention
 Uses indicatif to show a progress bar
 */
 pub fn checksum(files: Vec<String>) -> Result<HashMap<String, Vec<String>>, Box<dyn Error>> {
-    //set the progress bar style to allow for elapsed time and percentage complete
-    let checksums = std::sync::Mutex::new(HashMap::new());
+    println!("Computing checksums with {} threads...", rayon::current_num_threads());
+    
     let pb = indicatif::ProgressBar::new(files.len() as u64);
     let sty = ProgressStyle::default_bar()
         .template("{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {pos}/{len} ({eta})")
@@ -293,18 +306,27 @@ pub fn checksum(files: Vec<String>) -> Result<HashMap<String, Vec<String>>, Box<
 
     pb.set_style(sty);
 
-    files.par_iter().progress_with(pb).for_each(|file| {
-        let checksum = md5::compute(std::fs::read(file).unwrap());
-        let checksum = format!("{:x}", checksum);
-        let mut checksums = checksums.lock().unwrap();
+    // TRUE PARALLEL: Each thread computes checksums independently
+    let file_checksums: Vec<(String, String)> = files
+        .par_iter()
+        .progress_with(pb)
+        .filter_map(|file| {
+            if let Ok(content) = std::fs::read(file) {
+                let checksum = format!("{:x}", md5::compute(&content));
+                Some((checksum, file.clone()))
+            } else {
+                None
+            }
+        })
+        .collect();
 
-        checksums
-            .entry(checksum)
-            .or_insert_with(Vec::new)
-            .push(file.to_string());
-    });
+    // Sequential grouping (this part must be sequential anyway)
+    let mut checksums: HashMap<String, Vec<String>> = HashMap::new();
+    for (hash, file_path) in file_checksums {
+        checksums.entry(hash).or_default().push(file_path);
+    }
 
-    Ok(checksums.into_inner().unwrap())
+    Ok(checksums)
 }
 
 /*
