@@ -1,6 +1,6 @@
 [package]
 name = "rdedupe"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 
 [dependencies]
@@ -9,6 +9,7 @@ walkdir = "2.3.2"
 md5 = "0.7.0"
 rayon = "1.6.1"
 indicatif = {version = "*", features = ["rayon"]}
+polars = {version = "0.35", features = ["lazy", "csv"]}
 
 [dev-dependencies]
 assert_cmd = "2"
