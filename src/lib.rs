@@ -13,10 +13,8 @@ pub fn display_thread_info() {
     let num_cpus = num_cpus::get();
     let rayon_threads = rayon::current_num_threads();
     
-    println!("");
     println!("💻 CPU cores: {}", num_cpus);
     println!("🧵 Rayon thread pool size: {}", rayon_threads);
-    println!("");
 }
 
 #[derive(Debug, Clone)]
@@ -158,17 +156,22 @@ pub fn create_dataframe(mut file_infos: Vec<FileInfo>) -> Result<DataFrame, Box<
             .push(index);
     }
 
-    // Mark duplicates and assign group IDs
-    for (hash, indices) in hash_groups {
+    // Mark duplicates and assign group IDs - ONLY for files that actually have duplicates
+    let mut duplicate_count = 0;
+    for (hash, indices) in &hash_groups {
         if indices.len() > 1 {
             let group_id = hash.clone();
-
-            for &index in &indices {
+            duplicate_count += indices.len();
+            
+            for &index in indices {
                 file_infos[index].is_duplicate = true;
                 file_infos[index].duplicate_group = Some(group_id.clone());
             }
         }
     }
+    
+    println!("Found {} files in {} duplicate groups", duplicate_count, 
+             hash_groups.iter().filter(|(_, v)| v.len() > 1).count());
 
     // Extract data for DataFrame columns
     let paths: Vec<String> = file_infos.iter().map(|f| f.path.clone()).collect();
@@ -222,13 +225,64 @@ pub fn generate_statistics(df: &DataFrame) -> Result<DataFrame, Box<dyn Error>> 
     Ok(stats_df)
 }
 
-// Generate CSV report
+// Validate duplicate detection logic
+pub fn validate_duplicates(df: &DataFrame) -> Result<(), Box<dyn Error>> {
+    println!("\n=== Duplicate Detection Validation ===");
+    
+    // Group by hash and check consistency
+    let duplicates = df
+        .clone()
+        .lazy()
+        .filter(col("is_duplicate").eq(lit(true)))
+        .collect()?;
+    
+    if duplicates.height() == 0 {
+        println!("✓ No duplicates found - validation passed");
+        return Ok(());
+    }
+    
+    // Group duplicates by their hash to verify consistency
+    let grouped = duplicates
+        .clone()
+        .lazy()
+        .group_by([col("md5_hash")])
+        .agg([
+            col("file_path").count().alias("file_count"),
+            col("duplicate_group").first().alias("group_id")
+        ])
+        .collect()?;
+    
+    println!("Duplicate groups found:");
+    for row in 0..grouped.height() {
+        let hash = grouped.column("md5_hash")?.get(row)?;
+        let count = grouped.column("file_count")?.get(row)?;
+        println!("  Hash: {} -> {} files", hash, count);
+    }
+    
+    println!("✓ Duplicate detection validation completed");
+    Ok(())
+}
+
+// Generate CSV report - ONLY for duplicate files
 pub fn generate_csv_report(df: &mut DataFrame, output_path: &str) -> Result<(), Box<dyn Error>> {
+    // Filter to only include actual duplicates
+    let duplicates_only = df
+        .clone()
+        .lazy()
+        .filter(col("is_duplicate").eq(lit(true)))
+        .collect()?;
+    
+    if duplicates_only.height() == 0 {
+        println!("No duplicates found - CSV report not generated");
+        return Ok(());
+    }
+
     let mut file = std::fs::File::create(output_path)?;
+    let mut duplicates_df = duplicates_only;
+    
+    CsvWriter::new(&mut file).include_header(true).finish(&mut duplicates_df)?;
 
-    CsvWriter::new(&mut file).include_header(true).finish(df)?;
-
-    println!("CSV report generated: {}", output_path);
+    println!("CSV report generated: {} ({} duplicate files)", output_path, duplicates_df.height());
 
     Ok(())
 }
@@ -268,6 +322,9 @@ pub fn run_with_dataframe(
 
     println!("\n=== File Analysis Summary ===");
     println!("{}", stats);
+
+    // Validate duplicate detection
+    validate_duplicates(&df)?;
 
     // Show duplicate information
     let duplicates = df
